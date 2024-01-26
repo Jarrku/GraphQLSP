@@ -1,27 +1,46 @@
 import { FragmentOf, graphql, readFragment } from './graphql';
 
-export const Fields = { Pokemon: graphql(`
-  fragment Pok on Pokemon {
+const Pokemon1 = graphql(`
+  fragment Pok1 on Pokemon {
     resistant
-  }`)
-}
-
-export const PokemonFields = graphql(`
-  fragment pokemonFields on Pokemon {
-    name
-    weight { 
-      minimum
-    }
   }
 `);
 
+// Commenting out `...Pok1` and `[Pokemon1] resolves the issue for inline errors
+const Pokemon2 = graphql(
+  /* GraphQL */ `
+    fragment Pok2 on Pokemon {
+      id
+      ...Pok1
+    }
+  `,
+  [Pokemon1]
+);
+
+export const PokemonFields = graphql(
+  /* GraphQL */ `
+    fragment PokemonFields on Pokemon {
+      ...Pok2
+      name
+      weight {
+        minimum
+      }
+    }
+  `,
+  [Pokemon2]
+);
+
 interface Props {
-  data: (FragmentOf<typeof PokemonFields> & FragmentOf<typeof Fields.Pokemon>) | null;
+  data: FragmentOf<typeof PokemonFields> | null;
 }
 
 export const Pokemon = ({ data }: Props) => {
   const pokemon = readFragment(PokemonFields, data);
-  const resistant = readFragment(Fields.Pokemon, data);
+
+  // no error within editor, until I comment out `...Pok1` and the dep array in `Pokemon2`
+  const res = pokemon?.any;
+  const resistant = readFragment(Pokemon2, pokemon);
+
   if (!pokemon || !resistant) {
     return null;
   }

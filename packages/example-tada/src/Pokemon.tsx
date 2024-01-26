@@ -6,6 +6,7 @@ const Pokemon1 = graphql(`
   }
 `);
 
+// Commenting out `...Pok1` and `[Pokemon1] resolves the issue for inline errors
 const Pokemon2 = graphql(
   /* GraphQL */ `
     fragment Pok2 on Pokemon {
